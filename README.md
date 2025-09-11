@@ -1,5 +1,5 @@
 # cockpit-disk-io-monitor
-Plugin for Cockpit, requires SAR installed on the system.<br>
+Plugin for Cockpit, requires SAR & bash installed on the system.<br>
 Gray line on chart is 95 percentile.<br>
 Download and copy into /usr/share/cockpit/diskio/<br>
 Enjoy :)
