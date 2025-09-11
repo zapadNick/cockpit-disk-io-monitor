@@ -14,7 +14,7 @@
   "menu": {
     "index": {
       "label": "Disk I/O Monitor",
-      "order": 80,
+      "order": 35,
       "docs": [
         {
           "label": "Monitoring disk performance with sar",
