@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html id="diskio-page" data-cockpit-manifest>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title translate="yes">Disk I/O Monitor</title>
+
+  <!-- Cockpit API -->
+  <script src="../base1/cockpit.js"></script>
+  <script src="../base1/po.js"></script>
+
+  <!-- Chart.js для графікаў -->
+  <script src="chart.js"></script>
+  <script src="chartjs-plugin-annotation.min.js"></script>
+
+  <!-- Твой скрыпт -->
+  <script type="module" src="index.js"></script>
+
+  <!-- Стылі (можаш дадаць свой CSS тут) -->
+  <link href="diskio.css" type="text/css" rel="stylesheet" />
+</head>
+<body class="pf-v5-m-tabular-nums">
+  <div class="ct-page-fill" id="page">
+    <!-- <h2>📊 Disk I/O Monitor</h2> -->
+    <h2><img src="icons/Storage_icon_of_three_disks.png" alt="Disk Icon" style="height: 1em; vertical-align: middle;"> Disk I/O Monitor</h2>
+    <!-- <h2><span style="color: #007bff;">Disk I/O Monitor</span></h2> -->
+
+
+    <div style="display: flex; align-items: center; gap: 1em;">
+      <label for="diskSelect">Выберыце дыск:</label>
+      <select id="diskSelect"></select>
+      <span id="diskTypeLabel">Тып: —</span>
+      <label for="metricSelect">Метрыкі:</label>
+      <select id="metricSelect">
+        <option value="tps">TPS</option>
+        <option value="rd_sec_per_s">Read/kBsec</option>
+        <option value="wr_sec_per_s">Write/kBsec</option>
+        <option value="avgrq_sz">Avg Request Size</option>
+        <option value="avgqu_sz">Avg Queue Size</option>
+        <option value="await">Await</option>
+        <option value="svctm">Service Time ms</option>
+        <option value="util">%Util</option>
+      </select>
+      <label for="pointLimit">Колькасць значэнняў:</label>
+      <select id="pointLimit">
+        <option value="60">60</option>
+        <option value="120" selected>120</option>
+        <option value="300">300</option>
+        <option value="600">600</option>
+        <option value="1200">1200</option>
+      </select>
+    </div>
+
+    <canvas id="chart" width="600" height="300"></canvas>
+  </div>
+</body>
+</html>
+      <!-- <button id="resetButton" style="margin-left: 1em;">Скінуць гісторыю</button> -->
