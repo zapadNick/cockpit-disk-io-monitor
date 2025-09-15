@@ -19,6 +19,11 @@ export class ChartManager {
     return maxValue > 0 ? maxValue * 1.05 : 1;
   }
 
+  computeSuggestedMin(values) {
+    const minValue = Math.min(...values);
+    return minValue > 0 ? minValue * 0.95 : 0;
+  }
+
   renderInitial(store) {
     const history = store.get(this.disk, this.metric);
     const fullHistory = store.getAll?.(this.disk, this.metric) || history;
@@ -32,6 +37,7 @@ export class ChartManager {
     if (p95) annotations.p95Line = p95;
 
     const suggestedMax = this.computeSuggestedMax(values);
+    const suggestedMin = this.computeSuggestedMin(values);
 
     if (this.chart) this.chart.destroy();
 
@@ -51,8 +57,9 @@ export class ChartManager {
         animation: false,
         scales: {
           y: {
-            beginAtZero: true,
-            suggestedMax: suggestedMax
+            // beginAtZero: true,
+            suggestedMax: suggestedMax,
+            suggestedMin: suggestedMin
           },
           x: {
             ticks: {
@@ -83,6 +90,7 @@ export class ChartManager {
     this.chart.data.datasets[0].data = values.slice(-max);
 
     this.chart.options.scales.y.suggestedMax = this.computeSuggestedMax(values);
+    this.chart.options.scales.y.suggestedMin = this.computeSuggestedMin(values);
 
     const p95 = this.buildPercentileAnnotation(values, 95);
     if (p95) {
