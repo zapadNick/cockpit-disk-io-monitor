@@ -2,6 +2,7 @@ export class MetricStore {
   constructor(getLimitFn) {
     this.store = {}; // { disk: { metric: [{time, value}, ...] } }
     this.getLimit = getLimitFn;
+    this.maxLimit = 1201;
   }
 
   add(disk, metric, time, value) {
@@ -10,9 +11,9 @@ export class MetricStore {
 
     this.store[disk][metric].push({ time, value });
 
-    const max = this.getLimit();
-    if (this.store[disk][metric].length > max) {
-      this.store[disk][metric] = this.store[disk][metric].slice(-max);
+    // const max = this.getLimit();
+    if (this.store[disk][metric].length > this.maxLimit) {
+      this.store[disk][metric] = this.store[disk][metric].slice(-this.maxLimit);
     }
   }
 
@@ -55,7 +56,8 @@ export class MetricStore {
   
   getPadded(disk, metric) {
     const max = this.getLimit();
-    const history = this.store[disk]?.[metric] || [];
+    // const history = this.store[disk]?.[metric] || [];
+    const history = (this.store[disk]?.[metric] || []).slice(-max)
 
     const missing = max - history.length;
     // дапаўняе пустым у пачатаку графіка
