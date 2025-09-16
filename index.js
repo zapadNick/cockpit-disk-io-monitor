@@ -102,7 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const disk = diskSelect.value;
       const metric = metricSelect?.value;
       chartManager.setSelection(disk, metric);
-      // chartManager.renderInitial(metricStore);
     });
   }
 
@@ -111,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const disk = diskSelect?.value;
       const metric = metricSelect.value;
       chartManager.setSelection(disk, metric);
-      // chartManager.renderInitial(metricStore);
     });
   }
 });

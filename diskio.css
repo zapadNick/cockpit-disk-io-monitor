@@ -18,7 +18,7 @@ h2 {
 
 /* Контэйнер старонкі */
 #page {
-  max-width: 1200px;
+  max-width: 2400px;
   margin: auto;
   background-color: #fff;
   padding: 2em;
@@ -53,9 +53,10 @@ select {
 
 /* Графік */
 canvas#chart {
-  width: 100%;
+  width: 90%;
   height: 300px;
-  max-width: 1200px;
+  max-width: 2400px;
+  max-height: 666px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: #fff;

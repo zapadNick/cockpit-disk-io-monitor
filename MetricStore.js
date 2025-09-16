@@ -52,4 +52,18 @@ export class MetricStore {
     const index = Math.ceil((p / 100) * sorted.length) - 1;
     return sorted[index];
   }
+  
+  getPadded(disk, metric) {
+    const max = this.getLimit();
+    const history = this.store[disk]?.[metric] || [];
+
+    const missing = max - history.length;
+    // дапаўняе пустым у пачатаку графіка
+    // const padded = Array(missing).fill({ time: "—", value: null }).concat(history);
+    // дапаўняе пустым у канцы графіка
+    const padded = history.concat(Array(missing).fill({ time: "—", value: null }));
+
+    return padded;
+  }
+
 }

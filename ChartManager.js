@@ -13,19 +13,23 @@ export class ChartManager {
     this.disk = disk;
     this.metric = metric;
   }
-  
+
   computeSuggestedMax(values) {
     const maxValue = Math.max(...values);
     return maxValue > 0 ? maxValue * 1.05 : 1;
   }
 
   computeSuggestedMin(values) {
-    const minValue = Math.min(...values);
+    const filtered = values.filter(v => typeof v === "number" && !isNaN(v));
+    if (!filtered.length) return 0;
+
+    const minValue = Math.min(...filtered);
+    // const minValue = Math.min(...values);
     return minValue > 0 ? minValue * 0.95 : 0;
   }
 
   renderInitial(store) {
-    const history = store.get(this.disk, this.metric);
+    const history = store.getPadded(this.disk, this.metric);
     const fullHistory = store.getAll?.(this.disk, this.metric) || history;
 
     const labels = history.map(p => p.time);
@@ -50,7 +54,8 @@ export class ChartManager {
           data: labels.length ? values : [0],
           borderColor: "blue",
           fill: false,
-          tension: 0.2
+          tension: 0.2,
+          spanGaps: false
         }]
       },
       options: {
@@ -81,7 +86,7 @@ export class ChartManager {
   updateFromStore(store) {
     if (!this.chart || !this.disk || !this.metric) return;
 
-    const history = store.get(this.disk, this.metric);
+    const history = store.getPadded(this.disk, this.metric);
     const labels = history.map(p => p.time);
     const values = history.map(p => p.value);
     const max = store.getLimit();
