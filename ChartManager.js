@@ -1,3 +1,10 @@
+import {
+  onThemeChange,
+  getEffectivePalette,
+  syncShellTheme
+} from './ThemeManager.js';
+
+
 export class ChartManager {
   constructor(canvasId) {
     const canvas = document.getElementById(canvasId);
@@ -7,7 +14,14 @@ export class ChartManager {
     this.chart = null;
     this.disk = null;
     this.metric = null;
+
+    syncShellTheme();
   }
+
+  // rebuildChart(store) {
+  //   if (!this.disk || !this.metric) return;
+  //   this.renderInitial(store);
+  // }
 
   setSelection(disk, metric) {
     this.disk = disk;
@@ -24,11 +38,16 @@ export class ChartManager {
     if (!filtered.length) return 0;
 
     const minValue = Math.min(...filtered);
-    // const minValue = Math.min(...values);
     return minValue > 0 ? minValue * 0.95 : 0;
   }
 
   renderInitial(store) {
+    // падпіска на змену тэмы (адзін раз)
+    if (!this._themeSubscribed) {
+      onThemeChange(() => this.updateColors());
+      this._themeSubscribed = true;
+    }
+
     const history = store.getPadded(this.disk, this.metric);
     const fullHistory = store.getAll?.(this.disk, this.metric) || history;
 
@@ -42,6 +61,7 @@ export class ChartManager {
 
     const suggestedMax = this.computeSuggestedMax(values);
     const suggestedMin = this.computeSuggestedMin(values);
+    const palette = getEffectivePalette();
 
     if (this.chart) this.chart.destroy();
 
@@ -52,7 +72,7 @@ export class ChartManager {
         datasets: [{
           label: this.metric,
           data: labels.length ? values : [0],
-          borderColor: "blue",
+          borderColor: palette.accent,
           fill: false,
           tension: 0.2,
           spanGaps: false
@@ -62,13 +82,18 @@ export class ChartManager {
         animation: false,
         scales: {
           y: {
-            // beginAtZero: true,
-            suggestedMax: suggestedMax,
-            suggestedMin: suggestedMin
+            suggestedMax,
+            suggestedMin,
+            grid: {
+              color: palette.chartGrid
+            }
           },
           x: {
             ticks: {
-              maxTicksLimit: 10 // паказаць не больш за ... подпісаў
+              maxTicksLimit: 10
+            },
+            grid: {
+              color: palette.chartGrid
             }
           }
         },
@@ -80,7 +105,7 @@ export class ChartManager {
       }
     });
 
-    console.log(`📈 Графік пераствораны для ${this.disk} → ${this.metric}`);
+    // console.log(`📈 Графік пераствораны для ${this.disk} → ${this.metric}`);
   }
 
   updateFromStore(store) {
@@ -107,6 +132,32 @@ export class ChartManager {
     this.chart.update();
   }
 
+  updateColors() {
+    if (!this.chart) return;
+
+    const palette = getEffectivePalette();
+    // console.log("🎨 Атрыманая палітра:", palette);
+
+    // абнаўляем колер лініі
+    this.chart.data.datasets[0].borderColor = palette.accent;
+
+    // абнаўляем колер сеткі
+    this.chart.options.scales.x.grid.color = palette.chartGrid;
+    this.chart.options.scales.y.grid.color = palette.chartGrid;
+
+    // перастварэнне анатацыі
+    const values = this.chart.data.datasets[0].data;
+    const p95 = this.buildPercentileAnnotation(values, 95);
+
+    // 🔁 абнаўляем анатацыі цалкам
+    this.chart.options.plugins.annotation.annotations = {};
+    if (p95) {
+      this.chart.options.plugins.annotation.annotations.p95Line = p95;
+    }
+
+    this.chart.update();
+  }
+
   isOutdated(disk, metric) {
     return !this.chart || this.disk !== disk || this.metric !== metric || this.chart.data.datasets[0].label !== metric;
   }
@@ -119,18 +170,20 @@ export class ChartManager {
     const index = Math.ceil((percentile / 100) * sorted.length) - 1;
     const value = sorted[index];
 
+    const palette = getEffectivePalette();
+
     return {
       type: "line",
       scaleID: "y",
-      value: value,
-      borderColor: "gray",
+      value,
+      borderColor: palette.annotationLabelFg,
       borderWidth: 2,
       label: {
         content: `${percentile}% перцынціль: ${value}`,
         enabled: true,
         position: "start",
-        backgroundColor: "rgba(255,0,0,0.1)",
-        color: "gray"
+        backgroundColor: palette.annotationLabelBg,
+        color: palette.annotationLabelFg
       }
     };
   }

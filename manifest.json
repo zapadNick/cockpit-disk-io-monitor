@@ -8,7 +8,8 @@
     "ChartManager.js",
     "chartjs-plugin-annotation.min.js",
     "diskio.css",
-    "diskio.sh"
+    "diskio.sh",
+    "ThemeManager.js"
   ],
   "icon": "./icons/Storage_icon_of_three_disks.png",
   "menu": {

@@ -1,10 +1,22 @@
-/* diskio.css */
+:root {
+  --bg: var(--ct-color-bg); /*#f4f6f8; /* fallback */
+  --fg: #333;
+  --panel-bg: #fff;
+  --border: #ccc;
+  --shadow: rgba(0, 0, 0, 0.05);
+  --chart-bg: #fff;
+  --chart-border: #ddd;
+  --chart-grid: gray;
+  --accent: #328181;
+  --annotation-label-bg: rgba(255, 0, 0, 0.1);
+  --annotation-label-fg: gray;
+}
 
 /* Асноўны фон і шрыфт */
 body {
   font-family: "Segoe UI", "Roboto", sans-serif;
-  background-color: #f4f6f8;
-  color: #333;
+  background-color: var(--bg);
+  color: var(--fg);
   margin: 0;
   padding: 1em;
 }
@@ -13,20 +25,20 @@ body {
 h2 {
   font-size: 1.8em;
   margin-bottom: 1em;
-  color: #2b2b2b;
+  color: var(--fg);
 }
 
 /* Контэйнер старонкі */
 #page {
   max-width: 2400px;
   margin: auto;
-  background-color: #fff;
+  background-color: var(--panel-bg);
   padding: 2em;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 10px var(--shadow);
 }
 
-/* Панель выбару */
+/* Панэль выбару */
 div[style*="display: flex"] {
   flex-wrap: wrap;
   margin-bottom: 1.5em;
@@ -36,19 +48,21 @@ div[style*="display: flex"] {
 label {
   font-weight: bold;
   margin-right: 0.5em;
+  color: var(--fg);
 }
 
 select {
   padding: 0.4em 0.6em;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
-  background-color: #fff;
+  background-color: var(--bg);
+  color: var(--fg);
   font-size: 1em;
 }
 
 #diskTypeLabel {
   font-style: italic;
-  color: #555;
+  color: var(--fg);
 }
 
 /* Графік */
@@ -57,22 +71,9 @@ canvas#chart {
   height: 300px;
   max-width: 2400px;
   max-height: 666px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--chart-border);
   border-radius: 4px;
-  background-color: #fff;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
-}
-
-/* Кнопка скіду гісторыі (калі будзе актывавана) */
-#resetButton {
-  padding: 0.5em 1em;
-  background-color: #d9534f;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#resetButton:hover {
-  background-color: #c9302c;
+  background-color: var(--chart-bg);
+  grid: var(--chart-grid);
+  box-shadow: 0 0 4px var(--shadow);
 }

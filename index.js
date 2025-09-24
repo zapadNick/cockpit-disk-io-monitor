@@ -1,10 +1,14 @@
 import { ChartManager } from './ChartManager.js';
 import { MetricStore } from './MetricStore.js';
+import { syncShellTheme, onThemeChange } from './ThemeManager.js';
+
 
 const metricStore = new MetricStore(() => {
   const select = document.getElementById("pointLimit");
   return parseInt(select?.value || "128", 10);
 });
+
+// syncShellTheme();
 
 const chartManager = new ChartManager("chart");
 
@@ -112,4 +116,20 @@ document.addEventListener("DOMContentLoaded", () => {
       chartManager.setSelection(disk, metric);
     });
   }
+  
+  // ✅ падпіска на змену тэмы
+  // onThemeChange(() => {
+  //   // if (chartManager.disk && chartManager.metric) {
+  //     console.log("🎨 Тэма змянілася — перастварэнне графіка");
+  //     const disk = diskSelect?.value;
+  //     const metric = metricSelect.value;
+  //     chartManager.setSelection(disk, metric);
+  //     // chartManager.renderInitial(metricStore);
+  //   // }
+  // });
+
+  const classes = [...document.documentElement.classList];
+  // console.log('HTML classes:', classes);
+  // console.log(localStorage.getItem('shell:style'));
+
 });
