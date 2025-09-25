@@ -9,7 +9,8 @@
     "chartjs-plugin-annotation.min.js",
     "diskio.css",
     "diskio.sh",
-    "ThemeManager.js"
+    "translations.js",
+    "TranslationBridge.js"
   ],
   "icon": "./icons/Storage_icon_of_three_disks.png",
   "menu": {
@@ -30,6 +31,12 @@
       "path": "diskio/index.html"
     }
   },
-  "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';"
+  "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval';",
+  "scripts": [
+    "translations.js",
+    "TranslationBridge.js",
+    "index.js"
+  ]
 }
+
 

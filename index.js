@@ -2,7 +2,6 @@ import { ChartManager } from './ChartManager.js';
 import { MetricStore } from './MetricStore.js';
 import { syncShellTheme, onThemeChange } from './ThemeManager.js';
 
-
 const metricStore = new MetricStore(() => {
   const select = document.getElementById("pointLimit");
   return parseInt(select?.value || "128", 10);
@@ -12,9 +11,61 @@ const metricStore = new MetricStore(() => {
 
 const chartManager = new ChartManager("chart");
 
+// function fetchDisks() {
+//   // -n no header, -P output in key-value format, e7 - exclude loops
+//   cockpit.spawn(["lsblk", "-nP", "-e7", "-o", "NAME,TYPE"])
+//     .then(output => {
+//       const lines = output.trim().split("\n");
+//       const select = document.getElementById("diskSelect");
+//       if (!select) return;
+
+//       select.innerHTML = "";
+
+//       lines.forEach(line => {
+//         const fields = {};
+//         line.trim().split(/\s+/).forEach(pair => {
+//           const [key, val] = pair.split("=");
+//           fields[key] = val.replace(/"/g, "");
+//         });
+
+//         const name = fields.NAME;
+//         const type = fields.TYPE;
+
+//         if (["disk", "part", "lvm"].includes(type)) {
+//           const opt = document.createElement("option");
+//           opt.value = name;
+//           opt.text = name;
+//           select.appendChild(opt);
+//         }
+//       });
+
+//       if (select.options.length === 0) {
+//         const opt = document.createElement("option");
+//         opt.text = "❌ Не знойдзена прылад";
+//         opt.disabled = true;
+//         select.appendChild(opt);
+//       }
+//     });
+// }
 function fetchDisks() {
-  // -n no header, -P output in key-value format, e7 - exclude loops
-  cockpit.spawn(["lsblk", "-nP", "-e7", "-o", "NAME,TYPE"])
+  cockpit.spawn([
+    "bash", "-c",
+    `LC_ALL=C sar -dp 1 1 | grep -v loop | awk '
+      /^Average:/ && /DEV/ {
+        for (i = 1; i <= NF; i++) {
+          if ($i == "DEV") {
+            dev = i;
+            break;
+          }
+        }
+        next;
+      }
+
+      /^Average:/ {
+        if (dev) print $(dev);
+      }
+    '`
+  ])
     .then(output => {
       const lines = output.trim().split("\n");
       const select = document.getElementById("diskSelect");
@@ -22,27 +73,29 @@ function fetchDisks() {
 
       select.innerHTML = "";
 
-      lines.forEach(line => {
-        const fields = {};
-        line.trim().split(/\s+/).forEach(pair => {
-          const [key, val] = pair.split("=");
-          fields[key] = val.replace(/"/g, "");
-        });
+      lines.forEach(name => {
+        name = name.trim();
+        if (!name) return;
 
-        const name = fields.NAME;
-        const type = fields.TYPE;
-
-        if (["disk", "part", "lvm"].includes(type)) {
-          const opt = document.createElement("option");
-          opt.value = name;
-          opt.text = name;
-          select.appendChild(opt);
-        }
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.text = name;
+        select.appendChild(opt);
       });
 
       if (select.options.length === 0) {
         const opt = document.createElement("option");
         opt.text = "❌ Не знойдзена прылад";
+        opt.disabled = true;
+        select.appendChild(opt);
+      }
+    })
+    .catch(err => {
+      console.error("❌ fetchDisks error:", err);
+      const select = document.getElementById("diskSelect");
+      if (select) {
+        const opt = document.createElement("option");
+        opt.text = "Не знойдзена";
         opt.disabled = true;
         select.appendChild(opt);
       }
@@ -60,7 +113,7 @@ function startMonitoring() {
     const metric = metricSelect.value;
     if (!disk || !metric) return;
 
-    cockpit.spawn(["/usr/share/cockpit/diskio/diskio.sh", disk])
+    cockpit.spawn(["/home/lvv/.local/share/cockpit/diskio/diskio.sh", disk])
       .then(output => {
         const data = JSON.parse(output);
         const now = new Date().toLocaleTimeString();
@@ -88,6 +141,14 @@ function startMonitoring() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  const _ = TranslationBridge._;
+  document.getElementById("title").textContent = _("Disk I/O Monitor");
+  document.getElementById("label").textContent = _("Select drive: ");
+  document.getElementById("diskTypeLabel").textContent = _("Type: ");
+  document.getElementById("mtrSelName").textContent = _("Metric select: ");
+  document.getElementById("pointLimName").textContent = _("Display values: ");
+  
   fetchDisks();
   setTimeout(startMonitoring, 1000);
 

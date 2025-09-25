@@ -3,34 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title translate="yes">Disk I/O Monitor</title>
+  <title>Disk I/O Monitor</title>
 
   <!-- Cockpit API -->
   <script src="../base1/cockpit.js"></script>
-  <script src="../base1/po.js"></script>
 
   <!-- Chart.js для графікаў -->
   <script src="./chart.js"></script>
   <script src="./chartjs-plugin-annotation.min.js"></script>
 
-  <!-- Твой скрыпт -->
+  <!-- Лакалізацыя -->
+  <script src="translations.js"></script>
+  <script src="TranslationBridge.js"></script>
+
+  <!-- Асноўная логіка -->
   <script type="module" src="./index.js"></script>
 
-  <!-- Стылі (можаш дадаць свой CSS тут) -->
+  <!-- Стылі -->
   <link href="./diskio.css" type="text/css" rel="stylesheet" />
 </head>
 <body class="pf-v5-m-tabular-nums">
   <div class="ct-page-fill" id="page">
-    <!-- <h2>📊 Disk I/O Monitor</h2> -->
-    <h2><img src="./icons/Storage_icon_of_three_disks.png" alt="Disk Icon" style="height: 1em; vertical-align: middle;"> Disk I/O Monitor</h2>
-    <!-- <h2><span style="color: #007bff;">Disk I/O Monitor</span></h2> -->
+    <h1 id="title">
+      <img src="./icons/Storage_icon_of_three_disks.png" alt="Disk Icon" style="height: 1em; vertical-align: middle;">
+      Disk I/O Monitor
+    </h1>
 
-
-    <div style="display: flex; align-items: center; gap: 1em;">
-      <label for="diskSelect">Выберыце дыск:</label>
+    <div style="display: flex; align-items: center; gap: 1em; flex-wrap: wrap;">
+      <label id="label" for="diskSelect">Select drive: </label>
       <select id="diskSelect"></select>
-      <span id="diskTypeLabel">Тып: —</span>
-      <label for="metricSelect">Метрыкі:</label>
+
+      <span id="diskTypeLabel">Type: —</span>
+
+      <label id="mtrSelName" for="metricSelect">Metric select: </label>
       <select id="metricSelect">
         <option value="tps">TPS</option>
         <option value="read_kB_per_s">Read/kBsec</option>
@@ -41,7 +46,8 @@
         <option value="svctm">Service Time ms</option>
         <option value="util">%Util</option>
       </select>
-      <label for="pointLimit">Колькасць значэнняў:</label>
+
+      <label id=pointLimName for="pointLimit">Display values: </label>
       <select id="pointLimit">
         <option value="60">60</option>
         <option value="120" selected>120</option>
@@ -55,4 +61,3 @@
   </div>
 </body>
 </html>
-      <!-- <button id="resetButton" style="margin-left: 1em;">Скінуць гісторыю</button> -->

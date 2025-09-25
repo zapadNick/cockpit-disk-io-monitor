@@ -1,0 +1,14 @@
+msgid "Disk I/O Monitor"
+msgstr "Манітор дыскавага У/В"
+
+msgid "Select drive: "
+msgstr "Выберыце дыск: "
+
+msgid "Type: "
+msgstr "Тып: "
+
+msgid "Display values: "
+msgstr "Колькасць значэнняў: "
+
+msgid "Metric select: "
+msgstr "Метрыкі: "
