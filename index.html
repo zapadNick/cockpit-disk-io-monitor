@@ -33,18 +33,16 @@
       <label id="label" for="diskSelect">Select drive: </label>
       <select id="diskSelect"></select>
 
-      <span id="diskTypeLabel">Type: —</span>
-
       <label id="mtrSelName" for="metricSelect">Metric select: </label>
       <select id="metricSelect">
-        <option value="tps">TPS</option>
-        <option value="read_kB_per_s">Read/kBsec</option>
-        <option value="write_kB_per_s">Write/kBsec</option>
-        <option value="avgrq_sz">Avg Request Size</option>
-        <option value="avgqu_sz">Avg Queue Size</option>
-        <option value="await">Await</option>
-        <option value="svctm">Service Time ms</option>
-        <option value="util">%Util</option>
+        <option id=mS01 value="tps">TPS</option>
+        <option id=mS02 value="read_kB_per_s">Read/kBsec</option>
+        <option id=mS03 value="write_kB_per_s">Write/kBsec</option>
+        <option id=mS04 value="avgrq_sz">Avg Request Size</option>
+        <option id=mS05 value="avgqu_sz">Avg Queue Size</option>
+        <option id=mS06 value="await">Await</option>
+        <option id=mS07 value="svctm">Service Time ms</option>
+        <option id=mS08 value="util">%Util</option>
       </select>
 
       <label id=pointLimName for="pointLimit">Display values: </label>

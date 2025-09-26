@@ -11,42 +11,6 @@ const metricStore = new MetricStore(() => {
 
 const chartManager = new ChartManager("chart");
 
-// function fetchDisks() {
-//   // -n no header, -P output in key-value format, e7 - exclude loops
-//   cockpit.spawn(["lsblk", "-nP", "-e7", "-o", "NAME,TYPE"])
-//     .then(output => {
-//       const lines = output.trim().split("\n");
-//       const select = document.getElementById("diskSelect");
-//       if (!select) return;
-
-//       select.innerHTML = "";
-
-//       lines.forEach(line => {
-//         const fields = {};
-//         line.trim().split(/\s+/).forEach(pair => {
-//           const [key, val] = pair.split("=");
-//           fields[key] = val.replace(/"/g, "");
-//         });
-
-//         const name = fields.NAME;
-//         const type = fields.TYPE;
-
-//         if (["disk", "part", "lvm"].includes(type)) {
-//           const opt = document.createElement("option");
-//           opt.value = name;
-//           opt.text = name;
-//           select.appendChild(opt);
-//         }
-//       });
-
-//       if (select.options.length === 0) {
-//         const opt = document.createElement("option");
-//         opt.text = "❌ Не знойдзена прылад";
-//         opt.disabled = true;
-//         select.appendChild(opt);
-//       }
-//     });
-// }
 function fetchDisks() {
   cockpit.spawn([
     "bash", "-c",
@@ -109,28 +73,26 @@ function startMonitoring() {
 
     if (!diskSelect || !metricSelect) return;
 
-    const disk = diskSelect.value;
-    const metric = metricSelect.value;
-    if (!disk || !metric) return;
+    const selectedDisk = diskSelect.value;
+    const selectedMetric = metricSelect.value;
+    if (!selectedDisk || !selectedMetric) return;
 
-    cockpit.spawn(["/home/lvv/.local/share/cockpit/diskio/diskio.sh", disk])
+    // Выклікаем без аргументаў — diskio.sh вяртае ўсе дыскі
+    cockpit.spawn(["/usr/share/cockpit/diskio/diskio.sh"])
       .then(output => {
-        const data = JSON.parse(output);
+        const allDisksData = JSON.parse(output);
         const now = new Date().toLocaleTimeString();
 
-        Object.entries(data).forEach(([key, val]) => {
-          if (!["disk", "type", "name"].includes(key)) {
-            metricStore.add(disk, key, now, val);
-          }
+        // Перабіраем усе дыскі
+        Object.entries(allDisksData).forEach(([diskName, diskData]) => {
+          Object.entries(diskData).forEach(([key, val]) => {
+            metricStore.add(diskName, key, now, val);
+          });
         });
 
-        const typeLabel = document.getElementById("diskTypeLabel");
-        if (typeLabel) {
-          typeLabel.textContent = `Тып: ${data.type || "Unknown"}`;
-        }
-
-        if (chartManager.isOutdated(disk, metric)) {
-          chartManager.setSelection(disk, metric);
+        // Абнаўляем графік толькі для выбранага дыску і метрыкі
+        if (chartManager.isOutdated(selectedDisk, selectedMetric)) {
+          chartManager.setSelection(selectedDisk, selectedMetric);
           chartManager.renderInitial(metricStore);
           return;
         }
@@ -145,9 +107,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const _ = TranslationBridge._;
   document.getElementById("title").textContent = _("Disk I/O Monitor");
   document.getElementById("label").textContent = _("Select drive: ");
-  document.getElementById("diskTypeLabel").textContent = _("Type: ");
   document.getElementById("mtrSelName").textContent = _("Metric select: ");
   document.getElementById("pointLimName").textContent = _("Display values: ");
+  document.getElementById("mS01").textContent = _("TPS");
+  document.getElementById("mS02").textContent = _("Read/kBsec");
+  document.getElementById("mS03").textContent = _("Write/kBsec");
+  document.getElementById("mS04").textContent = _("Avg Request Size");
+  document.getElementById("mS05").textContent = _("Avg Queue Size");
+  document.getElementById("mS06").textContent = _("Await");
+  document.getElementById("mS07").textContent = _("Service Time ms");
+  document.getElementById("mS08").textContent = _("%Util");
   
   fetchDisks();
   setTimeout(startMonitoring, 1000);
@@ -177,18 +146,6 @@ document.addEventListener("DOMContentLoaded", () => {
       chartManager.setSelection(disk, metric);
     });
   }
-  
-  // ✅ падпіска на змену тэмы
-  // onThemeChange(() => {
-  //   // if (chartManager.disk && chartManager.metric) {
-  //     console.log("🎨 Тэма змянілася — перастварэнне графіка");
-  //     const disk = diskSelect?.value;
-  //     const metric = metricSelect.value;
-  //     chartManager.setSelection(disk, metric);
-  //     // chartManager.renderInitial(metricStore);
-  //   // }
-  // });
-
   const classes = [...document.documentElement.classList];
   // console.log('HTML classes:', classes);
   // console.log(localStorage.getItem('shell:style'));

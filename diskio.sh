@@ -1,46 +1,45 @@
 #!/bin/bash
 
-# cockpit-bridge --packages
-# /usr/share/cockpit/diskio/
-# ln -snf "$PWD" ~/.local/share/cockpit/diskio
 # yum install sysstat
+# ln -snf "$PWD" ~/.local/share/cockpit/diskio
 
-disk="$1"
+sector_csv=""
 
-detect_disk_type() {
-  local disk="$1"
+# Збіраем sector size для mapper-прылад
+while IFS= read -r line; do
+  mapper_name=$(echo "$line" | awk '{print $9}')
+  dm_target=$(echo "$line" | awk '{print $NF}' | sed 's|\.\./||')
 
-  # Калі nvme — адразу NVMe
-  [[ "$disk" == nvme* ]] && echo "NVMe" && return
+  [[ "$dm_target" != dm-* ]] && continue
 
-  # Калі rotational існуе
-  if [[ -f "/sys/block/$disk/queue/rotational" ]]; then
-    local rot
-    rot=$(cat "/sys/block/$disk/queue/rotational")
-    [[ "$rot" == "1" ]] && echo "HDD" || echo "SSD"
-  else
-    echo "Unknown"
-  fi
-}
+  ss=$(blockdev --getss "/dev/$dm_target" 2>/dev/null || echo 512)
+  sector_csv+="$mapper_name:$ss,"
+done < <(ls -l /dev/mapper)
 
-# # Калі перададзены /dev/mapper/... — пераўтварыць у dm-X
-# if [[ "$disk" == /dev/mapper/* ]]; then
-#   disk=$(ls -l "$disk" | awk -F'-> ../' '{print $2}')
-# fi
+# Дадаем фізічныя прылады
+while IFS= read -r disk; do
+  ss=$(blockdev --getss "/dev/$disk" 2>/dev/null || echo 512)
+  sector_csv+="$disk:$ss,"
+done < <(lsblk -dn -o NAME | grep -v '^loop')
 
-type=$(detect_disk_type "$disk")
+sector_csv="${sector_csv%,}"
+# echo ${sector_csv[@]}
 
-sector_size=$(blockdev --getss "/dev/$disk" 2>/dev/null || echo 512)
-
-LC_ALL=C sar -dp 1 1 | grep "Average:" | awk -v d="$disk" -v t="$type" -v ss="$sector_size" '
+# Запускаем sar
+LC_ALL=C sar -dp 1 1 | grep "^Average:" | grep -v loop | awk -v sector_csv="$sector_csv" '
 BEGIN {
-  found = 0
+  split(sector_csv, pairs, ",")
+  for (i in pairs) {
+    split(pairs[i], kv, ":")
+    sectors[kv[1]] = kv[2]
+  }
+
   headerParsed = 0
-  tps = rkb = wkb = rdsec = wrsec = arq = aqu = awt = svctm = util = dev = 0
+  print "{"
+  first = 1
 }
 
-# Вызначаем пазіцыі слупкоў
-/^Average:/ && /DEV/ {
+/^Average:/ && $0 ~ /DEV/ {
   for (i = 1; i <= NF; i++) {
     if ($i == "tps")        tps = i
     if ($i == "rkB/s")      rkb = i
@@ -58,36 +57,29 @@ BEGIN {
   next
 }
 
-# Апрацоўка радка з данымі
 headerParsed && /^Average:/ {
-  for (i = 1; i <= NF; i++) {
-    if ($i == d) {
-      found = 1
+  disk = $(dev)
+  ss = sectors[disk] + 0
 
-      # Вызначаем значэнні чытання/запісу ў кілабайтах
-      read_kb = (rkb ? $(rkb) : (rdsec ? $(rdsec) * ss / 1024 : 0))
-      write_kb = (wkb ? $(wkb) : (wrsec ? $(wrsec) * ss / 1024 : 0))
+  read_kb  = (rkb ? $(rkb) : (rdsec ? $(rdsec) * ss / 1024 : -1))
+  write_kb = (wkb ? $(wkb) : (wrsec ? $(wrsec) * ss / 1024 : -1))
 
-      print "{"
-      print "\"disk\":\"" d "\","
-      print "\"type\":\"" t "\","
-      print "\"tps\":" (tps     ? $(tps)   : 0) ","
-      print "\"read_kB_per_s\":"  read_kb ","
-      print "\"write_kB_per_s\":" write_kb ","
-      print "\"avgrq_sz\":"     (arq     ? $(arq)   : 0) ","
-      print "\"avgqu_sz\":"     (aqu     ? $(aqu)   : 0) ","
-      print "\"await\":"        (awt     ? $(awt)   : 0) ","
-      print "\"svctm\":"        (svctm   ? $(svctm) : 0) ","
-      print "\"util\":"         (util    ? $(util)  : 0)
-      print "}"
-      exit
-    }
-  }
+  if (!first) print ","
+  first = 0
+
+  print "\"" disk "\": {"
+  print "\"tps\":" (tps     ? $(tps)   : 0) ","
+  print "\"read_kB_per_s\":"  read_kb ","
+  print "\"write_kB_per_s\":" write_kb ","
+  print "\"avgrq_sz\":"     (arq     ? $(arq)   : 0) ","
+  print "\"avgqu_sz\":"     (aqu     ? $(aqu)   : 0) ","
+  print "\"await\":"        (awt     ? $(awt)   : 0) ","
+  print "\"svctm\":"        (svctm   ? $(svctm) : 0) ","
+  print "\"util\":"         (util    ? $(util)  : 0)
+  print "}"
 }
 
 END {
-  if (!found) {
-    print "{\"error\":\"Не знойдзены радок для " d "\"}"
-  }
+  print "}"
 }
 '
