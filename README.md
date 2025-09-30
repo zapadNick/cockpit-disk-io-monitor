@@ -5,6 +5,7 @@ Download and copy into /usr/share/cockpit/diskio/<br>
 chmod +x /usr/share/cockpit/diskio/diskio.sh<br>
 Enjoy :)
 <br>
-<img width="1889" height="980" alt="diskiomonitor" src="https://github.com/user-attachments/assets/bc5ddb85-5afc-4f4f-a487-805e51ea99fd" />
+<img width="1897" height="894" alt="Screenshot_20250930_115634" src="https://github.com/user-attachments/assets/e2757525-2559-46b9-b77e-694096bc257b" />
+
 
 
